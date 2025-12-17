@@ -9,31 +9,47 @@
 <body>
 
     <nav>
-        <button onclick="showTab('draft-tab')">Draft Team</button>
-        <button onclick="showTab('results-tab')">View Results</button>
+        <button onclick="showTab('draft-tab')">My Team</button>
+        <button onclick="showTab('results-tab')">League Results</button>
     </nav>
 
     <div id="draft-tab" class="tab-content">
-        <h1>Build Your Historic Team</h1>
-        <div id="user-inputs">
-            <div class="user-entry" id="user1-entry">
-                <h3>User 1</h3>
-                <input type="text" class="player-name" placeholder="Player Name (e.g. LeBron James)">
-                <input type="number" class="player-year" placeholder="Year (e.g. 2012)">
+        <h1>Draft Your All-Time Roster</h1>
+        <p>Select a player to see their available years, or select a year to see who played then.</p>
+        
+        <div id="roster-slots">
+            <div class="slot" data-pos="PG">
+                <label>Point Guard (PG):</label>
+                <select class="player-select" onchange="handleSelection(this, 'player')"><option value="">Select Player</option></select>
+                <select class="year-select" onchange="handleSelection(this, 'year')"><option value="">Select Year</option></select>
             </div>
-            <hr>
-            <div class="user-entry" id="user2-entry">
-                <h3>User 2</h3>
-                <input type="text" class="player-name" placeholder="Player Name (e.g. Shaquille O'Neal)">
-                <input type="number" class="player-year" placeholder="Year (e.g. 1996)">
+            <div class="slot" data-pos="SG">
+                <label>Shooting Guard (SG):</label>
+                <select class="player-select" onchange="handleSelection(this, 'player')"><option value="">Select Player</option></select>
+                <select class="year-select" onchange="handleSelection(this, 'year')"><option value="">Select Year</option></select>
+            </div>
+            <div class="slot" data-pos="SF">
+                <label>Small Forward (SF):</label>
+                <select class="player-select" onchange="handleSelection(this, 'player')"><option value="">Select Player</option></select>
+                <select class="year-select" onchange="handleSelection(this, 'year')"><option value="">Select Year</option></select>
+            </div>
+            <div class="slot" data-pos="PF">
+                <label>Power Forward (PF):</label>
+                <select class="player-select" onchange="handleSelection(this, 'player')"><option value="">Select Player</option></select>
+                <select class="year-select" onchange="handleSelection(this, 'year')"><option value="">Select Year</option></select>
+            </div>
+            <div class="slot" data-pos="C">
+                <label>Center (C):</label>
+                <select class="player-select" onchange="handleSelection(this, 'player')"><option value="">Select Player</option></select>
+                <select class="year-select" onchange="handleSelection(this, 'year')"><option value="">Select Year</option></select>
             </div>
         </div>
-        <button class="save-btn" onclick="saveTeams()">Save & Complete</button>
+
+        <button class="save-btn" onclick="saveMyTeam()">Save & Complete Roster</button>
     </div>
 
     <div id="results-tab" class="tab-content" style="display:none;">
-        <h1>League Standings</h1>
-        
+        <h1>Weekly Comparison</h1>
         <div class="week-selector">
             <label>Select Week: </label>
             <select id="week-select" onchange="renderResults()">
@@ -41,10 +57,7 @@
                 <option value="2">Week 2</option>
             </select>
         </div>
-
         <div id="leaderboard"></div>
-
-        <h2>Detailed Stats</h2>
         <div id="stats-container"></div>
     </div>
 
