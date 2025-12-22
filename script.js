@@ -1,47 +1,123 @@
-let statsData = {};
+// 1. GLOBAL STATE
+let myRoster = {
+    'G': { name: '', season: '', data: null },
+    'F': { name: '', season: '', data: null },
+    'C': { name: '', season: '', data: null }
+};
 
-// Load the JSON data immediately when the page loads
-async function init() {
-    try {
-        const response = await fetch('stats_db.json');
-        statsData = await response.json();
-        console.log("Stats Database Loaded");
-    } catch (error) {
-        console.error("Error loading JSON:", error);
+// 2. INITIALIZE PAGE
+function init() {
+    const select = document.getElementById('seasonSelect');
+    // Generate seasons from 2024 back to 1946
+    for (let i = 2024; i >= 1946; i--) {
+        let yearShort = String(i + 1).slice(-2);
+        let seasonValue = `${i}-${yearShort}`;
+        let option = new Option(seasonValue, seasonValue);
+        select.add(option);
     }
 }
 
-function displayStats() {
-    const name = document.getElementById('playerName').value;
-    const resultsDiv = document.getElementById('results');
-    const tableBody = document.getElementById('statsBody');
-    
-    // Check if player exists in your JSON
-    if (statsData[name]) {
-        resultsDiv.classList.remove('hidden');
-        document.getElementById('displayName').innerText = name;
-        tableBody.innerHTML = ''; // Clear old results
+// 3. SCREEN NAVIGATION
+function goToStats() {
+    document.getElementById('screen-roster').classList.add('hidden');
+    document.getElementById('screen-stats').classList.remove('hidden');
+    loadRosterData(); // Fetch the JSONs for all selected players
+}
 
-        // Get the first available season (or you can link this to the dropdown)
-        const seasons = Object.keys(statsData[name]);
-        const selectedSeason = seasons[0]; 
+function goToRoster() {
+    document.getElementById('screen-stats').classList.add('hidden');
+    document.getElementById('screen-roster').classList.remove('hidden');
+}
 
-        const weeks = statsData[name][selectedSeason];
+// 4. ASSIGN PLAYER TO SLOT
+function assignToSlot(position) {
+    const name = document.getElementById('playerName').value.trim();
+    const season = document.getElementById('seasonSelect').value;
 
-        for (const week in weeks) {
-            const row = `<tr>
-                <td>${week}</td>
-                <td>${weeks[week].pts}</td>
-                <td>${weeks[week].reb}</td>
-                <td>${weeks[week].ast}</td>
-                <td>${weeks[week].three_pt}</td>
-                <td>${weeks[week].fan_pts}</td>
-            </tr>`;
-            tableBody.innerHTML += row;
-        }
-    } else {
-        alert("Player not found. Make sure to use exact names like 'LeBron James'");
+    if (!name || !season) {
+        alert("Please enter a name and select a season!");
+        return;
     }
+
+    // Save selection to our roster object
+    myRoster[position].name = name;
+    myRoster[position].season = season;
+
+    // Update the UI
+    const slotDiv = document.getElementById(`slot-${position}`);
+    slotDiv.classList.add('filled');
+    slotDiv.querySelector('.player-info').innerText = `${name} (${season})`;
+}
+
+// 5. FETCH & DISPLAY DATA
+async function loadRosterData() {
+    const tableBody = document.getElementById('statsBody');
+    const weekSelect = document.getElementById('weekSelect');
+    tableBody.innerHTML = '<tr><td colspan="8">Loading stats...</td></tr>';
+    
+    let allWeeks = new Set(); // To fill the week dropdown
+
+    // Loop through each roster position
+    for (const pos in myRoster) {
+        const player = myRoster[pos];
+        if (!player.name) continue;
+
+        try {
+            // Fetch the specific season file from the /data/ folder
+            const response = await fetch(`data/stats_${player.season}.json`);
+            const db = await response.json();
+            
+            if (db[player.name]) {
+                player.data = db[player.name];
+                Object.keys(player.data).forEach(w => allWeeks.add(w));
+            } else {
+                player.data = null;
+                console.warn(`${player.name} not found in ${player.season}`);
+            }
+        } catch (e) {
+            console.error("Fetch error:", e);
+        }
+    }
+
+    // Update Week Dropdown
+    weekSelect.innerHTML = '<option value="all">Show All Weeks</option>';
+    Array.from(allWeeks).sort().forEach(w => {
+        weekSelect.add(new Option(w, w));
+    });
+
+    renderTable('all');
+}
+
+function renderTable(filterWeek) {
+    const tableBody = document.getElementById('statsBody');
+    tableBody.innerHTML = '';
+
+    for (const pos in myRoster) {
+        const p = myRoster[pos];
+        if (!p.data) continue;
+
+        for (const week in p.data) {
+            if (filterWeek !== 'all' && week !== filterWeek) continue;
+
+            const s = p.data[week];
+            tableBody.innerHTML += `
+                <tr>
+                    <td><strong>${pos}</strong></td>
+                    <td>${p.name}</td>
+                    <td>${week}</td>
+                    <td>${s.pts}</td>
+                    <td>${s.reb}</td>
+                    <td>${s.ast}</td>
+                    <td>${s.three_pt}</td>
+                    <td style="background:#f0f7ff"><strong>${s.fan_pts}</strong></td>
+                </tr>`;
+        }
+    }
+}
+
+function filterTableByWeek() {
+    const val = document.getElementById('weekSelect').value;
+    renderTable(val);
 }
 
 init();
