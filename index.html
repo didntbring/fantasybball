@@ -2,65 +2,49 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GOAT Fantasy Tracker</title>
-    <link rel="stylesheet" href="style.css">
+    <title>NBA Fantasy Dashboard</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+        .search-box { margin-bottom: 20px; display: flex; gap: 10px; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
 
-    <nav>
-        <button onclick="showTab('draft-tab')">My Team</button>
-        <button onclick="showTab('results-tab')">League Results</button>
-    </nav>
-
-    <div id="draft-tab" class="tab-content">
-        <h1>Draft Your All-Time Roster</h1>
-        <p>Select a player to see their available years, or select a year to see who played then.</p>
-        
-        <div id="roster-slots">
-            <div class="slot" data-pos="PG">
-                <label>Point Guard (PG):</label>
-                <select class="player-select" onchange="handleSelection(this, 'player')"><option value="">Select Player</option></select>
-                <select class="year-select" onchange="handleSelection(this, 'year')"><option value="">Select Year</option></select>
-            </div>
-            <div class="slot" data-pos="SG">
-                <label>Shooting Guard (SG):</label>
-                <select class="player-select" onchange="handleSelection(this, 'player')"><option value="">Select Player</option></select>
-                <select class="year-select" onchange="handleSelection(this, 'year')"><option value="">Select Year</option></select>
-            </div>
-            <div class="slot" data-pos="SF">
-                <label>Small Forward (SF):</label>
-                <select class="player-select" onchange="handleSelection(this, 'player')"><option value="">Select Player</option></select>
-                <select class="year-select" onchange="handleSelection(this, 'year')"><option value="">Select Year</option></select>
-            </div>
-            <div class="slot" data-pos="PF">
-                <label>Power Forward (PF):</label>
-                <select class="player-select" onchange="handleSelection(this, 'player')"><option value="">Select Player</option></select>
-                <select class="year-select" onchange="handleSelection(this, 'year')"><option value="">Select Year</option></select>
-            </div>
-            <div class="slot" data-pos="C">
-                <label>Center (C):</label>
-                <select class="player-select" onchange="handleSelection(this, 'player')"><option value="">Select Player</option></select>
-                <select class="year-select" onchange="handleSelection(this, 'year')"><option value="">Select Year</option></select>
-            </div>
-        </div>
-
-        <button class="save-btn" onclick="saveMyTeam()">Save & Complete Roster</button>
+<div class="container">
+    <h2>NBA Player Fantasy Tracker</h2>
+    
+    <div class="search-box">
+        <input type="text" id="playerName" placeholder="Enter Player Name (e.g. LeBron James)">
+        <select id="seasonSelect">
+            <option value="">Select Season</option>
+        </select>
+        <button onclick="displayStats()">Search</button>
     </div>
 
-    <div id="results-tab" class="tab-content" style="display:none;">
-        <h1>Weekly Comparison</h1>
-        <div class="week-selector">
-            <label>Select Week: </label>
-            <select id="week-select" onchange="renderResults()">
-                <option value="1">Week 1</option>
-                <option value="2">Week 2</option>
-            </select>
-        </div>
-        <div id="leaderboard"></div>
-        <div id="stats-container"></div>
+    <div id="results" class="hidden">
+        <h3 id="displayName"></h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Week</th>
+                    <th>Points</th>
+                    <th>Rebounds</th>
+                    <th>Assists</th>
+                    <th>3PM</th>
+                    <th>Fantasy Pts</th>
+                </tr>
+            </thead>
+            <tbody id="statsBody"></tbody>
+        </table>
     </div>
+</div>
 
-    <script src="script.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
