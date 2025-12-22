@@ -1,5 +1,5 @@
-// 1. GLOBAL STATE
-let myRoster = {
+// 1. GLOBAL STATE - Load from localStorage if it exists
+let myRoster = JSON.parse(localStorage.getItem('nbaRoster')) || {
     'PG': { name: '', season: '', data: null },
     'SG': { name: '', season: '', data: null },
     'SF': { name: '', season: '', data: null },
@@ -18,41 +18,44 @@ function init() {
         let option = new Option(seasonValue, seasonValue);
         select.add(option);
     }
-    console.log("App Initialized: Seasons loaded.");
+
+    // Update UI for filled slots from memory
+    for (const pos in myRoster) {
+        if (myRoster[pos].name) {
+            const slotDiv = document.getElementById(`slot-${pos}`);
+            if (slotDiv) {
+                slotDiv.classList.add('filled');
+                slotDiv.querySelector('.player-info').innerText = `${myRoster[pos].name} (${myRoster[pos].season})`;
+            }
+        }
+    }
+
+    // REQ 1: If roster is filled, default to stats screen
+    const hasPlayers = Object.values(myRoster).some(p => p.name !== '');
+    if (hasPlayers) {
+        goToStats();
+    }
+    
+    console.log("App Initialized.");
 }
 
-// NEW: This pre-loads names for the autocomplete list based on chosen season
 async function preloadSeasonData() {
     const season = document.getElementById('seasonSelect').value;
     const datalist = document.getElementById('playerList');
     const nameInput = document.getElementById('playerName');
-    
-    // Reset state
     datalist.innerHTML = '';
     nameInput.value = ''; 
-    
     if (!season) return;
-
     try {
-        console.log(`Fetching names for ${season}...`);
         const response = await fetch(`data/stats_${season}.json`);
         if (!response.ok) throw new Error(`Could not find data/stats_${season}.json`);
-        
         const db = await response.json();
-        const names = Object.keys(db).sort();
-
-        // Populate the datalist for the search bar
-        names.forEach(name => {
+        Object.keys(db).sort().forEach(name => {
             const option = document.createElement('option');
             option.value = name;
             datalist.appendChild(option);
         });
-        
-        console.log(`Success: ${names.length} players available for ${season}`);
-    } catch (e) {
-        console.error("Autocomplete load error:", e);
-        alert("Could not load player list for this season. Check your /data folder.");
-    }
+    } catch (e) { console.error(e); }
 }
 
 // 3. SCREEN NAVIGATION
@@ -71,7 +74,6 @@ function goToRoster() {
 function assignToSlot(position) {
     const nameInput = document.getElementById('playerName');
     const seasonSelect = document.getElementById('seasonSelect');
-    
     const name = nameInput.value.trim();
     const season = seasonSelect.value;
 
@@ -80,18 +82,17 @@ function assignToSlot(position) {
         return;
     }
 
-    // Save selection to our roster object
     myRoster[position].name = name;
     myRoster[position].season = season;
 
-    // Update the UI
+    // Save to LocalStorage
+    localStorage.setItem('nbaRoster', JSON.stringify(myRoster));
+
     const slotDiv = document.getElementById(`slot-${position}`);
     if (slotDiv) {
         slotDiv.classList.add('filled');
         slotDiv.querySelector('.player-info').innerText = `${name} (${season})`;
     }
-    
-    console.log(`Assigned ${name} (${season}) to ${position}`);
 }
 
 // 5. FETCH & DISPLAY DATA
@@ -105,20 +106,14 @@ async function loadRosterData() {
     for (const pos in myRoster) {
         const player = myRoster[pos];
         if (!player.name) continue;
-
         try {
             const response = await fetch(`data/stats_${player.season}.json`);
             const db = await response.json();
-            
             if (db[player.name]) {
                 player.data = db[player.name];
                 Object.keys(player.data).forEach(w => allWeeks.add(w));
-            } else {
-                player.data = null;
             }
-        } catch (e) {
-            console.error("Error loading roster data:", e);
-        }
+        } catch (e) { console.error(e); }
     }
 
     // Update Week Dropdown
@@ -126,18 +121,21 @@ async function loadRosterData() {
     const sortedWeeks = Array.from(allWeeks).sort((a, b) => {
         return parseInt(a.replace('week', '')) - parseInt(b.replace('week', ''));
     });
+    sortedWeeks.forEach(w => weekSelect.add(new Option(w, w)));
 
-    sortedWeeks.forEach(w => {
-        weekSelect.add(new Option(w, w));
-    });
-
-    renderTable('all');
+    // REQ 3: "Remember" what week was selected
+    const savedWeek = localStorage.getItem('selectedWeek') || 'all';
+    weekSelect.value = savedWeek;
+    renderTable(savedWeek);
 }
 
 function renderTable(filterWeek) {
     const tableBody = document.getElementById('statsBody');
     tableBody.innerHTML = '';
     let anyDataFound = false;
+
+    // REQ 2: Totals tracking
+    let totals = { pts: 0, reb: 0, ast: 0, tpm: 0, fan: 0 };
 
     for (const pos in myRoster) {
         const p = myRoster[pos];
@@ -147,6 +145,11 @@ function renderTable(filterWeek) {
             if (filterWeek !== 'all' && week !== filterWeek) continue;
             anyDataFound = true;
             const s = p.data[week];
+            
+            // Increment totals
+            totals.pts += s.pts; totals.reb += s.reb; totals.ast += s.ast;
+            totals.tpm += s.three_pt; totals.fan += s.fan_pts;
+
             tableBody.innerHTML += `
                 <tr>
                     <td><strong>${pos}</strong></td>
@@ -156,20 +159,32 @@ function renderTable(filterWeek) {
                     <td>${s.reb}</td>
                     <td>${s.ast}</td>
                     <td>${s.three_pt}</td>
-                    <td style="background:#f0f7ff; font-weight:bold; color:#007bff;">${s.fan_pts}</td>
+                    <td class="fan-cell">${s.fan_pts.toFixed(1)}</td>
                 </tr>`;
         }
     }
 
-    if (!anyDataFound) {
-        tableBody.innerHTML = '<tr><td colspan="8">No players assigned yet or no data found for selected week.</td></tr>';
+    // REQ 2: Add Sum Line
+    if (anyDataFound) {
+        tableBody.innerHTML += `
+            <tr class="total-row">
+                <td colspan="3">ROSTER TOTALS</td>
+                <td>${totals.pts}</td>
+                <td>${totals.reb}</td>
+                <td>${totals.ast}</td>
+                <td>${totals.tpm}</td>
+                <td>${totals.fan.toFixed(1)}</td>
+            </tr>`;
+    } else {
+        tableBody.innerHTML = '<tr><td colspan="8">No data found for this selection.</td></tr>';
     }
 }
 
 function filterTableByWeek() {
     const val = document.getElementById('weekSelect').value;
+    localStorage.setItem('selectedWeek', val); // Remember week
     renderTable(val);
 }
 
-// Initialize the season list
 init();
+
