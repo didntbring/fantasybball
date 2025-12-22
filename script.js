@@ -1,8 +1,11 @@
-// 1. GLOBAL STATE
+// 1. GLOBAL STATE - Now matches your 6-position HTML
 let myRoster = {
-    'G': { name: '', season: '', data: null },
-    'F': { name: '', season: '', data: null },
-    'C': { name: '', season: '', data: null }
+    'PG': { name: '', season: '', data: null },
+    'SG': { name: '', season: '', data: null },
+    'SF': { name: '', season: '', data: null },
+    'PF': { name: '', season: '', data: null },
+    'C': { name: '', season: '', data: null },
+    'UTIL': { name: '', season: '', data: null }
 };
 
 // 2. INITIALIZE PAGE
@@ -15,13 +18,14 @@ function init() {
         let option = new Option(seasonValue, seasonValue);
         select.add(option);
     }
+    console.log("App Initialized: Seasons loaded.");
 }
 
 // 3. SCREEN NAVIGATION
 function goToStats() {
     document.getElementById('screen-roster').classList.add('hidden');
     document.getElementById('screen-stats').classList.remove('hidden');
-    loadRosterData(); // Fetch the JSONs for all selected players
+    loadRosterData(); 
 }
 
 function goToRoster() {
@@ -31,11 +35,14 @@ function goToRoster() {
 
 // 4. ASSIGN PLAYER TO SLOT
 function assignToSlot(position) {
-    const name = document.getElementById('playerName').value.trim();
-    const season = document.getElementById('seasonSelect').value;
+    const nameInput = document.getElementById('playerName');
+    const seasonSelect = document.getElementById('seasonSelect');
+    
+    const name = nameInput.value.trim();
+    const season = seasonSelect.value;
 
     if (!name || !season) {
-        alert("Please enter a name and select a season!");
+        alert("Please enter a name and select a season first!");
         return;
     }
 
@@ -45,17 +52,21 @@ function assignToSlot(position) {
 
     // Update the UI
     const slotDiv = document.getElementById(`slot-${position}`);
-    slotDiv.classList.add('filled');
-    slotDiv.querySelector('.player-info').innerText = `${name} (${season})`;
+    if (slotDiv) {
+        slotDiv.classList.add('filled');
+        slotDiv.querySelector('.player-info').innerText = `${name} (${season})`;
+    }
+    
+    console.log(`Assigned ${name} (${season}) to ${position}`);
 }
 
 // 5. FETCH & DISPLAY DATA
 async function loadRosterData() {
     const tableBody = document.getElementById('statsBody');
     const weekSelect = document.getElementById('weekSelect');
-    tableBody.innerHTML = '<tr><td colspan="8">Loading stats...</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="8">Loading stats from database...</td></tr>';
     
-    let allWeeks = new Set(); // To fill the week dropdown
+    let allWeeks = new Set(); 
 
     // Loop through each roster position
     for (const pos in myRoster) {
@@ -63,16 +74,19 @@ async function loadRosterData() {
         if (!player.name) continue;
 
         try {
-            // Fetch the specific season file from the /data/ folder
+            // Path to your /data folder
             const response = await fetch(`data/stats_${player.season}.json`);
+            if (!response.ok) throw new Error(`File not found: stats_${player.season}.json`);
+            
             const db = await response.json();
             
+            // Check for exact name match (Case Sensitive!)
             if (db[player.name]) {
                 player.data = db[player.name];
                 Object.keys(player.data).forEach(w => allWeeks.add(w));
             } else {
                 player.data = null;
-                console.warn(`${player.name} not found in ${player.season}`);
+                console.warn(`Player "${player.name}" not found in ${player.season} file.`);
             }
         } catch (e) {
             console.error("Fetch error:", e);
@@ -81,7 +95,12 @@ async function loadRosterData() {
 
     // Update Week Dropdown
     weekSelect.innerHTML = '<option value="all">Show All Weeks</option>';
-    Array.from(allWeeks).sort().forEach(w => {
+    // Sort weeks so week1 comes before week10
+    const sortedWeeks = Array.from(allWeeks).sort((a, b) => {
+        return parseInt(a.replace('week', '')) - parseInt(b.replace('week', ''));
+    });
+
+    sortedWeeks.forEach(w => {
         weekSelect.add(new Option(w, w));
     });
 
@@ -92,6 +111,8 @@ function renderTable(filterWeek) {
     const tableBody = document.getElementById('statsBody');
     tableBody.innerHTML = '';
 
+    let anyDataFound = false;
+
     for (const pos in myRoster) {
         const p = myRoster[pos];
         if (!p.data) continue;
@@ -99,6 +120,7 @@ function renderTable(filterWeek) {
         for (const week in p.data) {
             if (filterWeek !== 'all' && week !== filterWeek) continue;
 
+            anyDataFound = true;
             const s = p.data[week];
             tableBody.innerHTML += `
                 <tr>
@@ -109,9 +131,13 @@ function renderTable(filterWeek) {
                     <td>${s.reb}</td>
                     <td>${s.ast}</td>
                     <td>${s.three_pt}</td>
-                    <td style="background:#f0f7ff"><strong>${s.fan_pts}</strong></td>
+                    <td style="background:#f0f7ff; font-weight:bold; color:#007bff;">${s.fan_pts}</td>
                 </tr>`;
         }
+    }
+
+    if (!anyDataFound) {
+        tableBody.innerHTML = '<tr><td colspan="8">No data found. Check player names and folder path.</td></tr>';
     }
 }
 
@@ -120,4 +146,5 @@ function filterTableByWeek() {
     renderTable(val);
 }
 
+// Start the app
 init();
