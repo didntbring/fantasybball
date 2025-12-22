@@ -5,27 +5,26 @@
     <title>NBA Fantasy Roster Manager</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f0f2f5; color: #333; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Typography & Buttons */
         h2, h3 { color: #1a2b3c; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; font-weight: bold; }
         button:hover { background: #0056b3; }
         .back-btn { background: #6c757d; margin-bottom: 20px; }
 
-        /* Roster Grid */
-        .roster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
-        .slot { border: 2px dashed #ccc; padding: 15px; border-radius: 8px; text-align: center; }
-        .slot.filled { border-style: solid; border-color: #007bff; background: #e7f3ff; }
+        .roster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
+        .slot { border: 2px dashed #ccc; padding: 15px; border-radius: 8px; text-align: center; transition: all 0.3s; }
+        .slot.filled { border-style: solid; border-color: #28a745; background: #f0fff4; }
+        .player-info { margin-top: 10px; font-style: italic; color: #666; }
         
-        /* Search & Controls */
-        .controls { margin: 15px 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 5px; flex-grow: 1; }
+        .controls { margin: 15px 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 5px; flex-grow: 1; min-width: 200px; }
 
-        /* Tables */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
         th, td { border: 1px solid #eee; padding: 12px; text-align: center; }
         th { background-color: #1a2b3c; color: white; }
+        tr:nth-child(even) { background-color: #fcfcfc; }
         
         .hidden { display: none; }
     </style>
@@ -35,24 +34,34 @@
 <div class="container">
     <div id="screen-roster">
         <h2>Build Your Roster</h2>
-        <p>Select a player and a season for each position:</p>
+        <p>Type a player's name and select their season, then assign them to a position.</p>
         
         <div class="controls">
             <input type="text" id="playerName" placeholder="Player Name (e.g. Michael Jordan)">
             <select id="seasonSelect">
                 <option value="">Select Season</option>
-                </select>
+            </select>
         </div>
 
         <div class="roster-grid">
-            <div class="slot" id="slot-G">
-                <h4>Guard (G)</h4>
-                <button onclick="assignToSlot('G')">Assign Player</button>
+            <div class="slot" id="slot-PG">
+                <h4>Point Guard (PG)</h4>
+                <button onclick="assignToSlot('PG')">Assign Player</button>
                 <p class="player-info">Empty</p>
             </div>
-            <div class="slot" id="slot-F">
-                <h4>Forward (F)</h4>
-                <button onclick="assignToSlot('F')">Assign Player</button>
+            <div class="slot" id="slot-SG">
+                <h4>Shooting Guard (SG)</h4>
+                <button onclick="assignToSlot('SG')">Assign Player</button>
+                <p class="player-info">Empty</p>
+            </div>
+            <div class="slot" id="slot-SF">
+                <h4>Small Forward (SF)</h4>
+                <button onclick="assignToSlot('SF')">Assign Player</button>
+                <p class="player-info">Empty</p>
+            </div>
+            <div class="slot" id="slot-PF">
+                <h4>Power Forward (PF)</h4>
+                <button onclick="assignToSlot('PF')">Assign Player</button>
                 <p class="player-info">Empty</p>
             </div>
             <div class="slot" id="slot-C">
@@ -60,10 +69,15 @@
                 <button onclick="assignToSlot('C')">Assign Player</button>
                 <p class="player-info">Empty</p>
             </div>
+            <div class="slot" id="slot-UTIL">
+                <h4>Utility (UTIL)</h4>
+                <button onclick="assignToSlot('UTIL')">Assign Player</button>
+                <p class="player-info">Empty</p>
+            </div>
         </div>
 
         <div style="margin-top: 30px; text-align: right;">
-            <button onclick="goToStats()" style="background: #28a745; font-weight: bold;">View Fantasy Stats →</button>
+            <button onclick="goToStats()" style="background: #28a745; font-size: 1.1em; padding: 15px 30px;">View Fantasy Stats →</button>
         </div>
     </div>
 
