@@ -1,17 +1,17 @@
-/* Keep your base styling */
+/* 1. BASE STYLING */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f4f9;
     padding: 20px;
     color: #333;
+    line-height: 1.6;
 }
 
-/* CRITICAL: This allows our Screen Switching logic to work */
+/* CRITICAL: Ensures screens actually hide/show */
 .hidden {
     display: none !important;
 }
 
-/* Container for the app */
 .container {
     max-width: 950px;
     margin: auto;
@@ -21,7 +21,13 @@ body {
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-/* Nav/Button Styling */
+h2 {
+    color: #1a2b3c;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+}
+
+/* 2. BUTTONS & NAVIGATION */
 button {
     padding: 10px 20px;
     cursor: pointer;
@@ -29,11 +35,13 @@ button {
     border-radius: 5px;
     background-color: #007bff;
     color: white;
-    transition: background 0.2s ease;
+    font-weight: bold;
+    transition: all 0.2s ease;
 }
 
 button:hover {
     background-color: #0056b3;
+    transform: translateY(-1px);
 }
 
 .back-btn {
@@ -41,7 +49,15 @@ button:hover {
     margin-bottom: 15px;
 }
 
-/* Roster Slots Styling */
+.reset-btn {
+    background-color: #dc3545;
+}
+
+.reset-btn:hover {
+    background-color: #a71d2a;
+}
+
+/* 3. ROSTER GRID & SLOTS */
 .roster-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -55,6 +71,7 @@ button:hover {
     border-radius: 10px;
     text-align: center;
     background: #fafafa;
+    transition: all 0.3s ease;
 }
 
 .slot.filled {
@@ -64,53 +81,91 @@ button:hover {
 
 .player-info {
     font-weight: bold;
-    color: #555;
+    color: #2c3e50;
     margin-top: 10px;
+    min-height: 1.2em;
 }
 
-/* Inputs & Controls */
+/* 4. INPUTS & CONTROLS */
 .controls {
-    background: #eee;
+    background: #f8f9fa;
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 20px;
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+    align-items: center;
+    border: 1px solid #eee;
 }
 
 input, select {
-    padding: 10px;
+    padding: 12px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    font-size: 1rem;
 }
 
-/* Table Enhancements */
+input:focus, select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0,123,255,0.2);
+}
+
+/* 5. TABLE STYLING */
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    overflow: hidden;
+    border-radius: 8px;
 }
 
 th, td {
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #eee;
     text-align: center;
 }
 
 th {
     background-color: #1a2b3c;
     color: white;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+tr:nth-child(even) {
+    background-color: #fafafa;
 }
 
 /* Highlight the Fantasy Points column */
-td:last-child {
+.fan-cell {
     font-weight: bold;
     color: #007bff;
-    background-color: #f8fbff;
+    background-color: #f0f7ff !important;
+}
+
+/* The Sum Line (Total Row) */
+.total-row {
+    background-color: #1a2b3c !important;
+    color: white !important;
+    font-weight: bold;
+}
+
+.total-row td {
+    border-top: 2px solid #333;
 }
 
 .winner { 
     color: #28a745; 
     font-weight: bold; 
+}
+
+/* Helper for user hints */
+.hint {
+    font-size: 0.85em;
+    color: #666;
+    margin-bottom: 10px;
+    display: block;
 }
